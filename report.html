@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Supply Chain Fulfillment Center - End of Shift Report</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #0a0a0a;
+        color: #f1f1f1;
+      }
+      .dashboard-header {
+        background: linear-gradient(
+          135deg,
+          #121212 0%,
+          #1e3a5f 60%,
+          #3a0e0e 100%
+        );
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        border: 1px solid #333;
+      }
+      .dashboard-title {
+        margin: 0;
+        font-size: 24px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+      }
+      .report-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .report-card {
+        background: linear-gradient(
+          135deg,
+          #111111 0%,
+          #0e1d2d 85%,
+          #1a0a0a 100%
+        );
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        padding: 20px;
+        flex: 1;
+        min-width: 320px;
+        border: 1px solid #333;
+      }
+      .report-title {
+        font-size: 20px;
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #e0e0e0;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+      .global-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        border: 1px solid #333;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #bbb;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #444;
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: #222;
+        color: #ddd;
+      }
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+      }
+      button {
+        background: linear-gradient(135deg, #1a4b8f 0%, #2980b9 100%);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      button:hover {
+        background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+      }
+      .export-btn {
+        background: linear-gradient(135deg, #196c39 0%, #27ae60 100%);
+      }
+      .export-btn:hover {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+      }
+      .back-btn {
+        background: linear-gradient(135deg, #7f1d1d 0%, #c0392b 100%);
+      }
+      .back-btn:hover {
+        background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+      }
+      /* Chart styles */
+      .chart-container {
+        margin-top: 20px;
+        height: 300px;
+        width: 100%;
+        position: relative;
+        background-color: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid #333;
+      }
+
+      body.light-theme .chart-container {
+        background-color: rgba(240, 240, 240, 0.3);
+        border-color: #ddd;
+      }
+
+      /* Add more space between charts */
+      #uph-chart {
+        margin-bottom: 40px;
+      }
+      .metrics-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .metric-card {
+        background-color: #1a1a1a;
+        border-radius: 6px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        border: 1px solid #333;
+      }
+      .metric-title {
+        font-size: 14px;
+        color: #aaa;
+        margin: 0 0 5px 0;
+      }
+      .metric-value {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0;
+        color: #e0e0e0;
+      }
+      .segment-container {
+        margin-top: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #323131;
+        border-radius: 6px;
+        background-color: #737171;
+      }
+      .segment-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .segment-table th,
+      .segment-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #2a2929;
+      }
+      .segment-table th {
+        background-color: #2f2e2e;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .segment-table tr:nth-child(even) {
+        background-color: #1a1a1a;
+      }
+      .segment-table tr:hover {
+        background-color: #222;
+      }
+      .tab-container {
+        margin-bottom: 15px;
+      }
+      .tab-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .tab-button {
+        padding: 8px 16px;
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-bottom: none;
+        border-radius: 4px 4px 0 0;
+        cursor: pointer;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        color: #aaa;
+      }
+      .tab-button.active {
+        background: linear-gradient(to bottom, #1a4b8f 0%, #0f243e 100%);
+        color: white;
+      }
+      .tab-content {
+        display: none;
+        padding: 15px;
+        border: 1px solid #333;
+        border-radius: 0 4px 4px 4px;
+        background-color: #111;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .caution {
+        color: #f39c12;
+      }
+      .danger {
+        color: #e74c3c;
+      }
+      .success {
+        color: #2ecc71;
+      }
+      .info-block {
+        background-color: rgba(20, 50, 80, 0.2);
+        border-left: 4px solid #3498db;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .info-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #e0e0e0;
+      }
+      .report-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .report-summary-item {
+        display: flex;
+        flex-direction: column;
+      }
+      .report-summary-label {
+        font-size: 14px;
+        color: #aaa;
+      }
+      .report-summary-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #e0e0e0;
+      }
+      @media (max-width: 768px) {
+        .metrics-container {
+          grid-template-columns: 1fr;
+        }
+      }
+      .nav-tabs {
+        display: flex;
+        margin-right: 20px;
+      }
+
+      .nav-tab {
+        padding: 6px 15px;
+        margin-right: 5px;
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #aaa;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .nav-tab:hover {
+        background-color: #222;
+        color: #fff;
+        transform: translateY(-2px);
+      }
+
+      .nav-tab.active {
+        background: linear-gradient(to bottom, #1a4b8f 0%, #0f243e 100%);
+        color: white;
+        border-color: #3498db;
+      }
+
+      .header-buttons {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      /* Theme Toggle Styles */
+      .theme-toggle {
+        position: relative;
+        display: inline-block;
+        margin: 0 15px;
+      }
+
+      .theme-toggle-checkbox {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      .theme-toggle-label {
+        display: block;
+        width: 70px;
+        height: 34px;
+        border-radius: 34px;
+        position: relative;
+        cursor: pointer;
+        background-color: #fff;
+        border: 2px solid #1e293b;
+        transition: all 0.3s ease;
+        overflow: hidden;
+      }
+
+      .toggle-handle {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #1e293b;
+        transition: all 0.3s ease;
+        z-index: 2;
+      }
+
+      .sun-icon,
+      .moon-icon {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        z-index: 1;
+      }
+
+      .sun-icon {
+        left: 10px;
+        color: #f9d71c;
+      }
+
+      .moon-icon {
+        right: 10px;
+        color: #f9d71c;
+      }
+
+      /* When toggled to dark mode */
+      .theme-toggle-checkbox:checked + .theme-toggle-label {
+        background-color: #1e293b;
+      }
+
+      .theme-toggle-checkbox:checked + .theme-toggle-label .toggle-handle {
+        left: calc(100% - 32px);
+        background-color: #fff;
+      }
+
+      /* For focus accessibility */
+      .theme-toggle-checkbox:focus + .theme-toggle-label {
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+      }
+
+      /* Light Theme Styles */
+      body.light-theme {
+        background-color: #f5f5f5;
+        color: #333;
+      }
+
+      body.light-theme .dashboard-header {
+        background: linear-gradient(
+          135deg,
+          #f0f0f0 0%,
+          #3a7bd5 60%,
+          #8e3c3c 100%
+        );
+        border-color: #ddd;
+      }
+
+      body.light-theme .dashboard-title {
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      body.light-theme .department-card,
+      body.light-theme .report-card {
+        background: linear-gradient(
+          135deg,
+          #ffffff 0%,
+          #e3f2fd 85%,
+          #f6f6f6 100%
+        );
+        border-color: #ddd;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      body.light-theme .department-title,
+      body.light-theme .report-title {
+        color: #2c3e50;
+        border-bottom-color: #ddd;
+      }
+
+      body.light-theme .metric-card,
+      body.light-theme .volume-card {
+        background-color: #fff;
+        border-color: #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      body.light-theme .metric-title,
+      body.light-theme .volume-type,
+      body.light-theme label,
+      body.light-theme .status-item .label {
+        color: #777;
+      }
+
+      body.light-theme .metric-value,
+      body.light-theme .status-item .value {
+        color: #333;
+      }
+
+      body.light-theme .progress-bar {
+        background-color: #e0e0e0;
+        border-color: #ccc;
+      }
+
+      body.light-theme .progress-fill {
+        background: linear-gradient(90deg, #3a7bd5 0%, #5a97e5 100%);
+      }
+
+      body.light-theme .progress-fill.caution {
+        background: linear-gradient(90deg, #f39c12 0%, #f5b041 100%);
+      }
+
+      body.light-theme .progress-fill.danger {
+        background: linear-gradient(90deg, #e74c3c 0%, #f1948a 100%);
+      }
+
+      body.light-theme .global-controls,
+      body.light-theme .department-time-controls,
+      body.light-theme .volume-container {
+        background: linear-gradient(135deg, #f0f0f0 0%, #f8f8f8 100%);
+        border-color: #ddd;
+      }
+
+      body.light-theme input,
+      body.light-theme select,
+      body.light-theme textarea {
+        background-color: #fff;
+        border-color: #ddd;
+        color: #333;
+      }
+
+      body.light-theme .tab-button {
+        background-color: #f0f0f0;
+        border-color: #ddd;
+        color: #777;
+      }
+
+      body.light-theme .tab-button.active {
+        background: linear-gradient(to bottom, #3a7bd5 0%, #2c5499 100%);
+        color: white;
+      }
+
+      body.light-theme .tab-content {
+        background-color: #fff;
+        border-color: #ddd;
+      }
+
+      body.light-theme .nav-tab {
+        background-color: #f0f0f0;
+        border-color: #ddd;
+        color: #777;
+      }
+
+      body.light-theme .nav-tab.active {
+        background: linear-gradient(to bottom, #3a7bd5 0%, #2c5499 100%);
+        color: white;
+        border-color: #2980b9;
+      }
+
+      body.light-theme .nav-tab:hover {
+        background-color: #e0e0e0;
+      }
+
+      body.light-theme .info-block {
+        background-color: rgba(52, 152, 219, 0.1);
+        border-left-color: #3498db;
+      }
+
+      body.light-theme .recommendation {
+        background-color: rgba(52, 152, 219, 0.1);
+        border-left-color: #3498db;
+      }
+
+      body.light-theme .staff-table th,
+      body.light-theme .segment-table th {
+        background-color: #f0f0f0;
+        color: #333;
+      }
+
+      body.light-theme .staff-table td,
+      body.light-theme .segment-table td {
+        border-bottom-color: #ddd;
+      }
+
+      body.light-theme .segment-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      body.light-theme .segment-table tr:hover {
+        background-color: #f0f0f0;
+      }
+
+      /* Login Page Specific Light Theme */
+      body.light-theme .login-container {
+        background: linear-gradient(
+          135deg,
+          #ffffff 0%,
+          #e3f2fd 85%,
+          #f6f6f6 100%
+        );
+        border-color: #ddd;
+      }
+
+      body.light-theme .login-header {
+        background: linear-gradient(
+          135deg,
+          #f0f0f0 0%,
+          #3a7bd5 60%,
+          #8e3c3c 100%
+        );
+        border-color: #ddd;
+      }
+
+      body.light-theme .error-message {
+        background-color: rgba(231, 76, 60, 0.1);
+      }
+
+      body.light-theme .security-note {
+        color: #999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">End of Shift Report</h1>
+      <div class="header-buttons">
+        <div class="nav-tabs">
+          <a href="index.html" class="nav-tab">Dashboard</a>
+          <a href="report.html" class="nav-tab active">EOS Reports</a>
+        </div>
+        <div class="theme-toggle">
+          <input
+            type="checkbox"
+            id="theme-switch"
+            class="theme-toggle-checkbox"
+          />
+          <label for="theme-switch" class="theme-toggle-label">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="#f9d71c"
+            >
+              <path
+                d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM12 5a1 1 0 0 1-1-1V2a1 1 0 0 1 2 0v2a1 1 0 0 1-1 1zm0 19a1 1 0 0 1-1-1v-2a1 1 0 0 1 2 0v2a1 1 0 0 1-1 1zM5 12a1 1 0 0 1-1-1 1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H5zm14 0a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2h-2zM6.34 17.66a1 1 0 0 1-.7-1.7l1.44-1.44a1 1 0 0 1 1.42 1.4l-1.44 1.45a1 1 0 0 1-.72.3zM17.8 6.2a1 1 0 0 1-.71-1.71l1.44-1.44a1 1 0 0 1 1.42 1.4l-1.44 1.45a1 1 0 0 1-.71.3zM6.34 6.34a1 1 0 0 1-.7-.29l-1.45-1.45a1 1 0 0 1 1.41-1.41l1.44 1.44a1 1 0 0 1 0 1.41 1 1 0 0 1-.7.3zm11.32 11.32a1 1 0 0 1-.71-.3l-1.44-1.44a1 1 0 0 1 1.41-1.41l1.44 1.44a1 1 0 0 1 0 1.41 1 1 0 0 1-.7.3z"
+              />
+            </svg>
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="#f9d71c"
+            >
+              <path
+                d="M12.1 22c-5.5 0-10-4.5-10-10s4.5-10 10-10c.2 0 .5 0 .7.1-1.8 1.2-3 3.4-3 5.9 0 3.9 3.1 7 7 7 2.5 0 4.7-1.3 5.9-3.2.1.2.1.5.1.7 0 5.4-4.5 9.5-10.7 9.5z"
+              />
+            </svg>
+            <span class="toggle-handle"></span>
+          </label>
+        </div>
+        <div id="current-time"></div>
+      </div>
+    </div>
+
+    <div class="global-controls">
+      <div class="input-group">
+        <label for="report-date">Report Date</label>
+        <input type="date" id="report-date" />
+      </div>
+      <div class="input-group">
+        <label for="department">Department</label>
+        <select id="department">
+          <option value="all">All Departments</option>
+          <option value="receiving">Receiving</option>
+          <option value="picking">Picking</option>
+          <option value="shipping">Shipping</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="shift">Shift</label>
+        <select id="shift">
+          <option value="day">Day Shift</option>
+          <option value="evening">Evening Shift</option>
+          <option value="night">Night Shift</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Actions</label>
+        <button id="generate-report-btn">Generate Report</button>
+      </div>
+    </div>
+
+    <div class="report-container">
+      <div class="report-card">
+        <h2 class="report-title">Shift Summary</h2>
+
+        <div class="report-summary">
+          <div class="report-summary-item">
+            <span class="report-summary-label">Department</span>
+            <span class="report-summary-value" id="summary-department"
+              >All Departments</span
+            >
+          </div>
+          <div class="report-summary-item">
+            <span class="report-summary-label">Shift Date</span>
+            <span class="report-summary-value" id="summary-date"
+              >04/26/2025</span
+            >
+          </div>
+          <div class="report-summary-item">
+            <span class="report-summary-label">Shift</span>
+            <span class="report-summary-value" id="summary-shift"
+              >Day Shift (06:00 - 14:30)</span
+            >
+          </div>
+          <div class="report-summary-item">
+            <span class="report-summary-label">Total Staff</span>
+            <span class="report-summary-value" id="summary-staff">77</span>
+          </div>
+        </div>
+
+        <div class="metrics-container">
+          <div class="metric-card">
+            <div class="metric-title">Plan Completion</div>
+            <div class="metric-value" id="summary-completion">87.5%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Average UPH</div>
+            <div class="metric-value" id="summary-uph">245</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Average All-in Rate</div>
+            <div class="metric-value" id="summary-all-in-rate">12.8</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Total Volume Processed</div>
+            <div class="metric-value" id="summary-volume">18,450</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-container">
+      <div class="report-card">
+        <h2 class="report-title">Performance Data</h2>
+
+        <div class="tab-container">
+          <div class="tab-buttons">
+            <div
+              class="tab-button active"
+              onclick="openTab('performance', 'graphs')"
+            >
+              Performance Graphs
+            </div>
+            <div
+              class="tab-button"
+              onclick="openTab('performance', 'segments')"
+            >
+              15-Min Segments
+            </div>
+            <div
+              class="tab-button"
+              onclick="openTab('performance', 'departments')"
+            >
+              Department Breakdown
+            </div>
+          </div>
+
+          <div id="performance-graphs" class="tab-content active">
+            <div class="info-block">
+              <div class="info-title">Performance Metrics Over Time</div>
+              <p>
+                The charts below show productivity metrics tracked in 15-minute
+                intervals throughout the shift.
+              </p>
+            </div>
+
+            <h3>Units Per Hour (UPH)</h3>
+            <div class="chart-container" id="uph-chart">
+              <!-- UPH Chart will be rendered here -->
+              <canvas id="uph-chart-canvas"></canvas>
+            </div>
+
+            <h3>All-in Rate (Units/Hour/Person)</h3>
+            <div class="chart-container" id="allin-chart">
+              <!-- All-in Rate Chart will be rendered here -->
+              <canvas id="allin-chart-canvas"></canvas>
+            </div>
+          </div>
+
+          <div id="performance-segments" class="tab-content">
+            <div class="info-block">
+              <div class="info-title">15-Minute Segment Data</div>
+              <p>
+                Detailed breakdown of performance metrics in 15-minute intervals
+                throughout the shift.
+              </p>
+            </div>
+
+            <div class="segment-container">
+              <table class="segment-table" id="segment-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Volume</th>
+                    <th>Staff</th>
+                    <th>UPH</th>
+                    <th>All-in Rate</th>
+                    <th>Cumulative %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Sample data - would be populated dynamically -->
+                  <tr>
+                    <td>06:00 - 06:15</td>
+                    <td>175</td>
+                    <td>77</td>
+                    <td>700</td>
+                    <td>9.1</td>
+                    <td>2.3%</td>
+                  </tr>
+                  <tr>
+                    <td>06:15 - 06:30</td>
+                    <td>235</td>
+                    <td>77</td>
+                    <td>940</td>
+                    <td>12.2</td>
+                    <td>5.4%</td>
+                  </tr>
+                  <tr>
+                    <td>06:30 - 06:45</td>
+                    <td>258</td>
+                    <td>77</td>
+                    <td>1032</td>
+                    <td>13.4</td>
+                    <td>8.8%</td>
+                  </tr>
+                  <tr>
+                    <td>06:45 - 07:00</td>
+                    <td>267</td>
+                    <td>77</td>
+                    <td>1068</td>
+                    <td>13.9</td>
+                    <td>12.2%</td>
+                  </tr>
+                  <tr>
+                    <td>07:00 - 07:15</td>
+                    <td>270</td>
+                    <td>77</td>
+                    <td>1080</td>
+                    <td>14.0</td>
+                    <td>15.8%</td>
+                  </tr>
+                  <tr>
+                    <td>07:15 - 07:30</td>
+                    <td>280</td>
+                    <td>75</td>
+                    <td>1120</td>
+                    <td>14.9</td>
+                    <td>19.4%</td>
+                  </tr>
+                  <tr>
+                    <td>07:30 - 07:45</td>
+                    <td>285</td>
+                    <td>75</td>
+                    <td>1140</td>
+                    <td>15.2</td>
+                    <td>23.2%</td>
+                  </tr>
+                  <tr>
+                    <td>07:45 - 08:00</td>
+                    <td>275</td>
+                    <td>75</td>
+                    <td>1100</td>
+                    <td>14.7</td>
+                    <td>26.8%</td>
+                  </tr>
+                  <tr>
+                    <td>08:00 - 08:15</td>
+                    <td>200</td>
+                    <td>75</td>
+                    <td>800</td>
+                    <td>10.7</td>
+                    <td>29.5%</td>
+                  </tr>
+                  <tr>
+                    <td>08:15 - 08:30</td>
+                    <td>210</td>
+                    <td>75</td>
+                    <td>840</td>
+                    <td>11.2</td>
+                    <td>32.2%</td>
+                  </tr>
+                  <!-- More rows would be populated from the data -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="performance-departments" class="tab-content">
+            <div class="info-block">
+              <div class="info-title">Department Performance</div>
+              <p>
+                Breakdown of performance metrics by department for the selected
+                shift.
+              </p>
+            </div>
+
+            <div class="metrics-container">
+              <div class="metric-card">
+                <div class="metric-title">Receiving Department</div>
+                <div class="metric-value">98.2%</div>
+                <div class="metric-subtitle">Plan Completion</div>
+                <div class="info-block" style="margin-top: 10px; padding: 8px">
+                  <div>Volume: <strong>1,670</strong> units</div>
+                  <div>Staff: <strong>19</strong> people</div>
+                  <div>UPH: <strong>220</strong></div>
+                  <div>All-in Rate: <strong>11.6</strong></div>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-title">Picking Department</div>
+                <div class="metric-value">85.3%</div>
+                <div class="metric-subtitle">Plan Completion</div>
+                <div class="info-block" style="margin-top: 10px; padding: 8px">
+                  <div>Volume: <strong>13,820</strong> units</div>
+                  <div>Staff: <strong>33</strong> people</div>
+                  <div>UPH: <strong>288</strong></div>
+                  <div>All-in Rate: <strong>13.1</strong></div>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-title">Shipping Department</div>
+                <div class="metric-value">94.1%</div>
+                <div class="metric-subtitle">Plan Completion</div>
+                <div class="info-block" style="margin-top: 10px; padding: 8px">
+                  <div>Volume: <strong>2,960</strong> units</div>
+                  <div>Staff: <strong>25</strong> people</div>
+                  <div>UPH: <strong>185</strong></div>
+                  <div>All-in Rate: <strong>12.5</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-container">
+      <div class="report-card">
+        <h2 class="report-title">Comments & Observations</h2>
+
+        <div class="input-group">
+          <label for="supervisor">Supervisor Name</label>
+          <input type="text" id="supervisor" placeholder="Enter your name" />
+        </div>
+
+        <div class="input-group">
+          <label for="challenges">Challenges & Issues</label>
+          <textarea
+            id="challenges"
+            placeholder="Describe any challenges, issues, or unusual events that impacted operations..."
+          ></textarea>
+        </div>
+
+        <div class="input-group">
+          <label for="successes">Successes & Improvements</label>
+          <textarea
+            id="successes"
+            placeholder="Describe any successes, process improvements, or notable achievements..."
+          ></textarea>
+        </div>
+
+        <div class="input-group">
+          <label for="action-items">Action Items & Follow-up</label>
+          <textarea
+            id="action-items"
+            placeholder="List any action items or follow-up tasks needed for next shift..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div
+      style="display: flex; justify-content: space-between; margin-top: 20px"
+    >
+      <button class="back-btn" onclick="window.location.href='index.html'">
+        Back to Dashboard
+      </button>
+      <button class="export-btn" id="export-csv-btn">
+        Export Report to CSV
+      </button>
+    </div>
+
+    <!-- Include Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Option 1: If using folders -->
+    <script src="js/database.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

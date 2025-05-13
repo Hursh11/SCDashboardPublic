@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Supply Chain Fulfillment Center - Login</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background-color: #0a0a0a;
+        color: #f1f1f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #0a0a0a 0%, #111827 100%);
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 550px;
+        padding: 50px;
+        background: linear-gradient(
+          135deg,
+          #111111 0%,
+          #0e1d2d 85%,
+          #1a0a0a 100%
+        );
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        border: 1px solid #333;
+      }
+
+      .login-header {
+        background: linear-gradient(
+          135deg,
+          #121212 0%,
+          #1e3a5f 60%,
+          #3a0e0e 100%
+        );
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        border: 1px solid #333;
+      }
+
+      .login-title {
+        margin: 0;
+        font-size: 24px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+        text-align: center;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #bbb;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #444;
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: #222;
+        color: #ddd;
+        font-size: 16px;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+      }
+
+      .login-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+      }
+
+      .remember-me {
+        display: flex;
+        align-items: center;
+      }
+
+      .remember-me input {
+        width: auto;
+        margin-right: 8px;
+      }
+
+      .forgot-password {
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      .forgot-password:hover {
+        text-decoration: underline;
+      }
+
+      .login-btn {
+        background: linear-gradient(135deg, #1a4b8f 0%, #2980b9 100%);
+        color: white;
+        border: none;
+        padding: 12px 15px;
+        width: 100%;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        margin-top: 10px;
+      }
+
+      .login-btn:hover {
+        background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .error-message {
+        background-color: rgba(231, 76, 60, 0.2);
+        border-left: 4px solid #e74c3c;
+        color: #e74c3c;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        display: none;
+      }
+
+      .company-logo {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .company-logo img {
+        height: 60px;
+        width: auto;
+      }
+
+      .security-note {
+        font-size: 12px;
+        color: #777;
+        text-align: center;
+        margin-top: 25px;
+      }
+
+      .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+        display: none;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="company-logo">
+        <img src="assets/SCFClogo.PNG" alt="Company Logo" />
+      </div>
+
+      <div class="login-header">
+        <h1 class="login-title">SC FC - User Login</h1>
+      </div>
+
+      <div id="error-message" class="error-message">
+        Invalid username or password. Please try again.
+      </div>
+
+      <form id="login-form">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="login-footer">
+          <div class="remember-me">
+            <input type="checkbox" id="remember" name="remember" />
+            <label for="remember">Remember me</label>
+          </div>
+
+          <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="login-btn">
+          <span id="loading-spinner" class="loading-spinner"></span>
+          <span>Log In</span>
+        </button>
+      </form>
+
+      <div class="security-note">
+        This is a secure connection. Your credentials are encrypted.
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const loginForm = document.getElementById("login-form");
+        const errorMessage = document.getElementById("error-message");
+        const loadingSpinner = document.getElementById("loading-spinner");
+
+        loginForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Get form values
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          // Show loading spinner
+          loadingSpinner.style.display = "inline-block";
+
+          // Hide any previous error messages
+          errorMessage.style.display = "none";
+
+          // Simulate API call with timeout (replace with actual authentication)
+          setTimeout(function () {
+            authenticateUser(username, password);
+          }, 1000);
+        });
+
+        function authenticateUser(username, password) {
+          // In a real implementation, you would make an API call to your backend
+          // This is just for demonstration
+
+          if (username === "admin" && password === "password") {
+            // Successful login
+            window.location.href = "index.html"; // Redirect to the main page
+          } else {
+            // Failed login
+            loadingSpinner.style.display = "none";
+            errorMessage.style.display = "block";
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
